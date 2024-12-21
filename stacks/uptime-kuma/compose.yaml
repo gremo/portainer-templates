@@ -1,0 +1,42 @@
+services:
+    uptime-kuma:
+        container_name: ${COMPOSE_PROJECT_NAME}-uptime-kuma
+        image: louislam/uptime-kuma:${UPTIME_KUMA_TAG:?}
+        environment:
+            TZ: ${TZ:?}
+        volumes:
+            - uptime-kuma-data:/app/data
+        networks:
+            - proxy
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-shlink.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-shlink.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "docker-volume-backup.stop-during-backup=${COMPOSE_PROJECT_NAME}"
+
+    dvb:
+        container_name: ${COMPOSE_PROJECT_NAME}-dvb
+        image: offen/docker-volume-backup
+        environment:
+            BACKUP_CRON_EXPRESSION: ${BACKUP_FREQUENCY:-}
+            BACKUP_RETENTION_DAYS: 7
+            BACKUP_FILENAME: ${COMPOSE_PROJECT_NAME}-%Y-%m-%dT%H-%M-%S.{{ .Extension }}
+            BACKUP_PRUNING_PREFIX: ${COMPOSE_PROJECT_NAME}-
+            BACKUP_STOP_DURING_BACKUP_LABEL: ${COMPOSE_PROJECT_NAME}
+        volumes:
+            - uptime-kuma-data:/backup/uptime-kuma-data:ro
+            - ${BACKUP_ROOT:?}:/archive
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        network_mode: none
+        restart: unless-stopped
+
+volumes:
+    uptime-kuma-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true
