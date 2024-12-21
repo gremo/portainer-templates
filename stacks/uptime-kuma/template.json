@@ -1,0 +1,57 @@
+{
+    "title": "Uptime Kuma",
+    "description": "Uptime Kuma is a self-hosted monitoring tool. This version exposes the app via Traefik.",
+    "note": "Access the application at the configured domain. Backups are placed under the directory specified.",
+    "categories": [
+        "Utility"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/uptime-kuma-logo.png",
+    "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/uptime-kuma/compose.yaml"
+    },
+    "env": [
+        {
+            "name": "DOMAIN",
+            "label": "Domain",
+            "description": "Required domain name (without http:// or https://)."
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome",
+            "description": "Timezone (used for all containers)."
+        },
+        {
+            "name": "UPTIME_KUMA_TAG",
+            "label": "Uptime Kuma version",
+            "description": "The image tag to use for Uptime Kuma.",
+            "default": "latest"
+        },
+        {
+            "name": "BACKUP_FREQUENCY",
+            "label": "Backup frequency",
+            "description": "The cron expression specifying how often backups should run.",
+            "default": "@daily"
+        },
+        {
+            "name": "BACKUP_ROOT",
+            "label": "Backup folder",
+            "description": "The absolute path for storing backups.",
+            "default": "/srv/docker/backup"
+        },
+        {
+            "name": "TRAEFIK_NETWORK",
+            "label": "Traefik network",
+            "default": "traefik",
+            "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+            "name": "TRAEFIK_ENTRYPOINT",
+            "label": "Traefik entrypoint",
+            "default": "websecure",
+            "description": "Required Traefik entrypoint (must be secure)."
+        }
+    ]
+}

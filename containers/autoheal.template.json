@@ -1,0 +1,44 @@
+{
+    "title": "Docker Autoheal",
+    "description": "Monitor and restart unhealthy docker containers.",
+    "categories": [
+        "Utility",
+        "Monitoring"
+    ],
+    "platform": "linux",
+    "image": "willfarrell/autoheal",
+    "name": "autoheal",
+    "env": [
+        {
+            "name": "AUTOHEAL_INTERVAL",
+            "label": "Check interval",
+            "description": "Check interval (in seconds).",
+            "default": "30"
+        },
+        {
+            "name": "AUTOHEAL_ONLY_MONITOR_RUNNING",
+            "default": "true",
+            "preset": true
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/etc/localtime",
+            "bind": "/etc/localtime",
+            "readonly": true
+        },
+        {
+            "container": "/var/run/docker.sock",
+            "bind": "/var/run/docker.sock",
+            "readonly": true
+        }
+    ],
+    "network": "none",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

@@ -1,0 +1,37 @@
+services:
+    gtm-production:
+        container_name: "${COMPOSE_PROJECT_NAME}-gtm-production"
+        image: gcr.io/cloud-tagging-10302018/gtm-cloud-image:stable
+        environment:
+            CONTAINER_CONFIG: ${CONTAINER_CONFIG?:}
+            PREVIEW_SERVER_URL: https://sgtm-preview.${DOMAIN?:}
+        networks:
+            - proxy
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-gtm-production.rule=Host(`sgtm.${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-gtm-production.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.services.${COMPOSE_PROJECT_NAME}-gtm-production.loadbalancer.server.port=8080"
+            - "autoheal=true"
+
+    gtm-preview:
+        container_name: "${COMPOSE_PROJECT_NAME}-gtm-preview"
+        image: gcr.io/cloud-tagging-10302018/gtm-cloud-image:stable
+        environment:
+            CONTAINER_CONFIG: ${CONTAINER_CONFIG?:}
+            RUN_AS_PREVIEW_SERVER: true
+        networks:
+            - proxy
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-gtm-preview.rule=Host(`sgtm-preview.${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-gtm-preview.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.services.${COMPOSE_PROJECT_NAME}-gtm-preview.loadbalancer.server.port=8080"
+            - "autoheal=true"
+
+networks:
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true
