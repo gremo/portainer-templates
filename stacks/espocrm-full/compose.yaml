@@ -1,0 +1,123 @@
+services:
+    espocrm:
+        container_name: ${COMPOSE_PROJECT_NAME}-espocrm
+        image: espocrm/espocrm:${ESPOCRM_TAG?:}
+        environment:
+            ESPOCRM_SITE_URL: https://${DOMAIN:?}
+            ESPOCRM_TIME_ZONE: ${TZ:?}
+            ESPOCRM_DATABASE_PLATFORM: Mysql
+            ESPOCRM_DATABASE_HOST: db.local
+            ESPOCRM_DATABASE_NAME: espocrm
+            ESPOCRM_DATABASE_USER: espocrm
+            ESPOCRM_DATABASE_PASSWORD: ${DB_PASSWORD?:}
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-espocrm.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-espocrm.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "docker-volume-backup.stop-during-backup=true"
+
+    websocket:
+        container_name: ${COMPOSE_PROJECT_NAME}-websocket
+        image: espocrm/espocrm:${ESPOCRM_TAG?:}
+        environment:
+            ESPOCRM_CONFIG_USE_WEB_SOCKET: true
+            ESPOCRM_CONFIG_WEB_SOCKET_URL: "wss://${DOMAIN:?}/ws"
+            ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBSCRIBER_DSN: "tcp://*:7777"
+            ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBMISSION_DSN: "tcp://websocket:7777"
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        networks:
+            - proxy
+        entrypoint: docker-websocket.sh
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-websocket.rule=Host(`${DOMAIN:?}`) && PathPrefix(`/ws`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-websocket.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.services.${COMPOSE_PROJECT_NAME}-websocket.loadbalancer.server.port=8080"
+
+    daemon:
+        container_name: ${COMPOSE_PROJECT_NAME}-daemon
+        image: espocrm/espocrm:${ESPOCRM_TAG?:}
+        environment:
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        entrypoint: docker-daemon.sh
+        restart: unless-stopped
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+    db:
+        container_name: ${COMPOSE_PROJECT_NAME}-db
+        image: mysql:${MYSQL_TAG?:}
+        environment:
+            MYSQL_DATABASE: espocrm
+            MYSQL_USER: espocrm
+            MYSQL_PASSWORD: ${DB_PASSWORD?:}
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+            TZ: ${TZ:?}
+        volumes:
+            - db-data:/var/lib/mysql
+        networks:
+            default:
+                aliases:
+                  - db.local
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+    phpmyadmin:
+        container_name: ${COMPOSE_PROJECT_NAME}-phpmyadmin
+        image: phpmyadmin
+        environment:
+            PMA_HOST: db.local
+            PMA_ABSOLUTE_URI: https://${DOMAIN?:}/phpmyadmin/
+            HIDE_PHP_VERSION: true
+            TZ: ${TZ?-}
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.replacement=$${1}/"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.permanent=true"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-strip.stripprefix.prefixes=/phpmyadmin"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.regex=^(https?://[^/]+/[^/]+)$$"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.rule=Host(`${DOMAIN?:}`) && PathPrefix(`/phpmyadmin`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.middlewares=${COMPOSE_PROJECT_NAME}-phpmyadmin-slash,${COMPOSE_PROJECT_NAME}-phpmyadmin-strip"
+
+volumes:
+    espocrm-data:
+    db-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

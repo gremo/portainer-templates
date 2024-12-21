@@ -1,0 +1,44 @@
+{
+    "title": "MySQL",
+    "description": "Relational database management system (RDBMS).",
+    "note": "Access the database from outside using the server domain and <code>3306</code> port.",
+    "categories": [
+        "Database"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mysql-logo.png",
+    "image": "mysql",
+    "name": "db",
+    "env": [
+        {
+            "name": "MYSQL_ROOT_PASSWORD",
+            "label": "Root password"
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/var/lib/mysql"
+        }
+    ],
+    "ports": [
+        "3306:3306/tcp"
+    ],
+    "network": "traefik",
+    "command": "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        },
+        {
+            "name": "docker-volume-backup.stop-during-backup",
+            "value": "true"
+        }
+    ]
+}

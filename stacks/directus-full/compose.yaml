@@ -1,0 +1,96 @@
+services:
+    directus:
+        container_name: ${COMPOSE_PROJECT_NAME}-directus
+        image: directus/directus:${DIRECTUS_TAG:?}
+        volumes:
+            - directus-extensions:/directus/extensions
+            - directus-uploads:/directus/uploads
+        environment:
+            SECRET: ${APP_SECRET:?}
+            ADMIN_EMAIL: admin@admin.com
+            ADMIN_PASSWORD: password
+            DB_CLIENT: mysql
+            DB_HOST: db.local
+            DB_PORT: 3306
+            DB_DATABASE: directus
+            DB_USER: directus
+            DB_PASSWORD: ${DB_PASSWORD?:}
+            CACHE_ENABLED: true
+            CACHE_AUTO_PURGE: true
+            PUBLIC_URL: https://${DOMAIN:?}
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-bookstack.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-bookstack.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "docker-volume-backup.stop-during-backup=true"
+
+    db:
+        container_name: ${COMPOSE_PROJECT_NAME}-db
+        image: mariadb:${MARIADB_TAG:?}
+        environment:
+            MARIADB_DATABASE: directus
+            MARIADB_USER: directus
+            MARIADB_PASSWORD: ${DB_PASSWORD?:}
+            MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+            TZ: ${TZ:?}
+        volumes:
+            - db-data:/var/lib/mysql
+        networks:
+            default:
+                aliases:
+                  - db.local
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+    phpmyadmin:
+        container_name: ${COMPOSE_PROJECT_NAME}-phpmyadmin
+        image: phpmyadmin
+        environment:
+            PMA_HOST: db.local
+            PMA_ABSOLUTE_URI: https://${DOMAIN?:}/phpmyadmin/
+            HIDE_PHP_VERSION: true
+            TZ: ${TZ?-}
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.replacement=$${1}/"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.permanent=true"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-strip.stripprefix.prefixes=/phpmyadmin"
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-phpmyadmin-slash.redirectregex.regex=^(https?://[^/]+/[^/]+)$$"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.rule=Host(`${DOMAIN?:}`) && PathPrefix(`/phpmyadmin`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-phpmyadmin.middlewares=${COMPOSE_PROJECT_NAME}-phpmyadmin-slash,${COMPOSE_PROJECT_NAME}-phpmyadmin-strip"
+
+volumes:
+    directus-extensions:
+    directus-uploads:
+    db-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

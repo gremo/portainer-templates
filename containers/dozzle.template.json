@@ -1,0 +1,47 @@
+{
+    "title": "Dozzle",
+    "description": "Lightweight real-time Docker log viewer for easy monitoring through a web interface. This version exposes the application via Traefik.",
+    "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name.",
+    "categories": [
+        "Utility",
+        "Monitoring"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dozzle-logo.png",
+    "image": "amir20/dozzle",
+    "name": "dozzle",
+    "env": [
+        {
+            "name": "DOZZLE_REMOTE_AGENT",
+            "label": "Remote agent",
+            "default": "",
+            "description": "Address/host name and port or remote agents, comma separated."
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/var/run/docker.sock",
+            "bind": "/var/run/docker.sock"
+        }
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "traefik.enable",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.routers.dozzle.rule",
+            "value": "Host(`example.com`)"
+        },
+        {
+            "name": "traefik.http.routers.dozzle.entrypoints",
+            "value": "websecure"
+        },
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

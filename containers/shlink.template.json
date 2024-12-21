@@ -1,0 +1,79 @@
+{
+    "title": "Shlink",
+    "description": "URL shortener that allows users to create, manage, and track shortened links. This version exposes the API via Traefik (requires a running database).",
+    "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the API at the configured domain. To generate an API key, run <code>php bin/cli api-key:generate</code> inside the Shlink container. Use this key with the configured domain in the <a href=\"https://app.shlink.io\" target=\"_blank\">Shlink app</a>.",
+    "categories": [
+        "Utility"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/shlink-logo.png",
+    "image": "shlinkio/shlink",
+    "env": [
+        {
+            "name": "DB_DRIVER",
+            "label": "Database driver",
+            "default": "db",
+            "description": "Required database driver.",
+            "select": [
+                {
+                    "text": "MariaDB",
+                    "value": "maria",
+                    "default": true
+                },
+                {
+                    "text": "MySQL",
+                    "value": "mysql"
+                }
+            ]
+        },
+        {
+            "name": "DB_HOST",
+            "label": "Database host",
+            "default": "db",
+            "description": "Required database host."
+        },
+        {
+            "name": "DB_USER",
+            "label": "Database user",
+            "default": "shlink",
+            "description": "Required database user."
+        },
+        {
+            "name": "DB_PASSWORD",
+            "label": "Database password",
+            "default": "",
+            "description": "Required database password."
+        },
+        {
+            "name": "DB_NAME",
+            "label": "Database name",
+            "default": "shlink",
+            "description": "Required database name."
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        }
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "traefik.enable",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.routers.shlink.rule",
+            "value": "Host(`example.com`)"
+        },
+        {
+            "name": "traefik.http.routers.shlink.entrypoints",
+            "value": "websecure"
+        },
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}
