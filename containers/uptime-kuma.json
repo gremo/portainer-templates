@@ -1,0 +1,44 @@
+{
+    "title": "Uptime Kuma",
+    "description": "Monitoring tool that helps track the uptime and performance of websites and services. This version exposes the app via Traefik.",
+    "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the application at the configured domain.",
+    "categories": [
+        "Utility"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/uptime-kuma-logo.png",
+    "image": "louislam/uptime-kuma",
+    "name": "uptime-kuma",
+    "env": [
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/app/data"
+        }
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "traefik.enable",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.routers.uptime-kuma.rule",
+            "value": "Host(`example.com`)"
+        },
+        {
+            "name": "traefik.http.routers.uptime-kuma.entrypoints",
+            "value": "websecure"
+        },
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "title": "GTM server",
+    "description": "Server-side implementation of Google Tag Manager (GTM). This version exposes the server via Traefik.",
+    "note": "Access the server at the subdomain <code>sgtm</code> of the configured domain. Access the preview server at the subdomain <code>sgtm-preview</code> of the configured domain.",
+    "categories": [
+        "Analytics"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/gtm-server-logo.png",
+    "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/gtm-server/compose.yaml"
+    },
+    "env": [
+        {
+            "name": "DOMAIN",
+            "label": "Domain",
+            "description": "Required domain name (without http:// or https://)."
+        },
+        {
+            "name": "CONTAINER_CONFIG",
+            "label": "Container config",
+            "default": "",
+            "description": "Required container configuration string."
+        },
+        {
+            "name": "TRAEFIK_NETWORK",
+            "label": "Traefik network",
+            "default": "traefik",
+            "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+            "name": "TRAEFIK_ENTRYPOINT",
+            "label": "Traefik entrypoint",
+            "default": "websecure",
+            "description": "Required Traefik entrypoint (must be secure)."
+        }
+    ]
+}
