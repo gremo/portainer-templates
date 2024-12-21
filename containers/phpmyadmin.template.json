@@ -1,0 +1,83 @@
+{
+    "title": "phpMyAdmin",
+    "description": "Web-based tool for managing MySQL and MariaDB databases. This version exposes the application via Traefik.",
+    "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name, which should match the domain specified in <code>PMA_ABSOLUTE_URI</code>. Access the application at path <code>/phpmyadmin</code> of the configured domain.",
+    "categories": [
+        "Database",
+        "Utility"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/phpmyadmin-logo.png",
+    "image": "phpmyadmin",
+    "name": "phpmyadmin",
+    "env": [
+        {
+            "name": "PMA_ABSOLUTE_URI",
+            "label": "Absolute URL",
+            "default": "https://example.com/phpmyadmin/",
+            "description": "Required absolute URL of this istance."
+        },
+        {
+            "name": "PMA_HOST",
+            "label": "Server address",
+            "description": "Required address/host name of the MySQL server.",
+            "default": "db"
+        },
+        {
+            "name": "UPLOAD_LIMIT",
+            "label": "Upload limit",
+            "default": "",
+            "description": "Optional upload limit."
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        },
+        {
+            "name": "HIDE_PHP_VERSION",
+            "default": "true",
+            "preset": true
+        }
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "traefik.enable",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.routers.phpmyadmin.rule",
+            "value": "Host(`example.com`) && PathPrefix(`/phpmyadmin`)"
+        },
+        {
+            "name": "traefik.http.routers.phpmyadmin.entrypoints",
+            "value": "websecure"
+        },
+        {
+            "name": "traefik.http.routers.phpmyadmin.middlewares",
+            "value": "phpmyadmin-slash,phpmyadmin-strip"
+        },
+        {
+            "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.regex",
+            "value": "^(https?://[^/]+/[^/]+)$"
+        },
+        {
+            "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.replacement",
+            "value": "${1}/"
+        },
+        {
+            "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.permanent",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.middlewares.phpmyadmin-strip.stripprefix.prefixes",
+            "value": "/phpmyadmin"
+        },
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

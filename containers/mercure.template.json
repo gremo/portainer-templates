@@ -1,0 +1,62 @@
+{
+    "title": "Mercure",
+    "description": "Real-time communications protocol designed to be fast, reliable, and battery-efficient. This version exposes the application via Traefik.",
+    "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name.",
+    "categories": [
+        "Server"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mercure-logo.png",
+    "image": "dunglas/mercure",
+    "name": "mercure",
+    "env": [
+        {
+            "name": "MERCURE_PUBLISHER_JWT_KEY",
+            "label": "Publisher JWT",
+            "default": "!ChangeThisMercureHubJWTSecretKey!"
+        },
+        {
+            "name": "MERCURE_SUBSCRIBER_JWT_KEY",
+            "label": "Subscriber JWT",
+            "default": "!ChangeThisMercureHubJWTSecretKey!"
+        },
+        {
+            "name": "SERVER_NAME",
+            "default": ":80",
+            "preset": true
+        },
+        {
+            "name": "MERCURE_EXTRA_DIRECTIVES",
+            "default": "cors_origins * publish_origins *",
+            "preset": true
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/config"
+        },
+        {
+            "container": "/data"
+        }
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "traefik.enable",
+            "value": "true"
+        },
+        {
+            "name": "traefik.http.routers.mercure.rule",
+            "value": "Host(`example.com`)"
+        },
+        {
+            "name": "traefik.http.routers.mercure.entrypoints",
+            "value": "websecure"
+        },
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

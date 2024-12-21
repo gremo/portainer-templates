@@ -1,0 +1,99 @@
+{
+    "title": "Rallly (standalone)",
+    "description": "Platform designed for creating real-time polls and surveys. This version exposes the API via Traefik and comes bundled with PostgreSQL.",
+    "note": "Generate the application key <code>openssl rand -base64 32</code>. Access the application at the configured domain.",
+    "categories": [
+        "Utility"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/rallly-logo.png",
+    "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/rallly-full/compose.yaml"
+    },
+    "env": [
+        {
+            "name": "DOMAIN",
+            "label": "Domain",
+            "description": "Required domain name (without http:// or https://)."
+        },
+        {
+            "name": "APP_KEY",
+            "label": "Application key",
+            "description": "Required unique app key for encryption."
+        },
+        {
+            "name": "ALLOWED_EMAILS",
+            "label": "Allowed emails",
+            "description": "Email that are allowed to register, comma separated, wildcard support."
+        },
+        {
+            "name": "DB_PASSWORD",
+            "label": "Database password",
+            "default": "",
+            "description": "Required password for rallly user."
+        },
+        {
+            "name": "MAIL_HOST",
+            "label": "SMTP server host",
+            "default": ""
+        },
+        {
+            "name": "MAIL_PORT",
+            "label": "SMTP server port",
+            "default": ""
+        },
+        {
+            "name": "MAIL_SECURE",
+            "label": "SMTP SSL",
+            "description": "Use true to enable SSL.",
+            "default": "true"
+        },
+        {
+            "name": "MAIL_USERNAME",
+            "label": "SMTP username",
+            "default": ""
+        },
+        {
+            "name": "MAIL_PASSWORD",
+            "label": "SMTP password",
+            "default": ""
+        },
+        {
+            "name": "SUPPORT_EMAIL",
+            "label": "Support email",
+            "description": "Required email for support queries.",
+            "default": ""
+        },
+        {
+            "name": "NOREPLY_EMAIL",
+            "label": "No-reply email",
+            "description": "Optional email for all transactional emails (fallback to support email).",
+            "default": ""
+        },
+        {
+            "name": "NOREPLY_EMAIL_NAME",
+            "label": "No-reply name",
+            "description": "Used as the sender name for all transactional emails.",
+            "default": ""
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome",
+            "description": "Timezone (used for all containers)."
+        },
+        {
+            "name": "TRAEFIK_NETWORK",
+            "label": "Traefik network",
+            "default": "traefik",
+            "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+            "name": "TRAEFIK_ENTRYPOINT",
+            "label": "Traefik entrypoint",
+            "default": "websecure",
+            "description": "Required Traefik entrypoint (must be secure)."
+        }
+    ]
+}

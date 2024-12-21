@@ -1,0 +1,64 @@
+services:
+    rallly:
+        container_name: ${COMPOSE_PROJECT_NAME}-rallly
+        image: lukevella/rallly:latest
+        environment:
+            NEXT_PUBLIC_BASE_URL: https://${DOMAIN:?}
+            SECRET_PASSWORD: ${APP_KEY:?}
+            ALLOWED_EMAILS: ${ALLOWED_EMAILS?-}
+            DATABASE_URL: postgres://rallly:${DB_PASSWORD:?}@db.local/rallly
+            SMTP_HOST: ${MAIL_HOST:?}
+            SMTP_PORT: ${MAIL_PORT:?}
+            SMTP_SECURE: ${MAIL_SECURE:-}
+            SMTP_USER: ${MAIL_USERNAME:?}
+            SMTP_PWD: ${MAIL_PASSWORD:-}
+            SUPPORT_EMAIL: ${SUPPORT_EMAIL:?}
+            NOREPLY_EMAIL: ${NOREPLY_EMAIL:-}
+            NOREPLY_EMAIL_NAME: ${NOREPLY_EMAIL_NAME:-}
+            TZ: ${TZ:?}
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-rallly.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-rallly.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+
+    db:
+        container_name: ${COMPOSE_PROJECT_NAME}-db
+        image: postgres:14
+        environment:
+            POSTGRES_USER: rallly
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?}
+            POSTGRES_DB: rallly
+            TZ: ${TZ:?}
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            default:
+                aliases:
+                  - db.local
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U rallly"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+volumes:
+    db-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

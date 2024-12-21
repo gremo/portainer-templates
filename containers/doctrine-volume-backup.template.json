@@ -1,0 +1,51 @@
+{
+    "title": "Doctrine Volume Backup",
+    "description": "Backup Docker volumes locally or to any S3, WebDAV, Azure Blob Storage, Dropbox or SSH compatible storage.",
+    "note": "Remember to configure the remote storage using the <a href=\"https://https://offen.github.io/docker-volume-backup/reference/\" target=\"_blank\">configuration variables</a>.",
+    "categories": [
+        "Utility",
+        "Monitoring"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dvb-logo.png",
+    "image": "offen/docker-volume-backup",
+    "env": [
+        {
+            "name": "BACKUP_CRON_EXPRESSION",
+            "label": "Backup frequency",
+            "description": "The cron expression specifying how often backups should run.",
+            "default": "@daily"
+        },
+        {
+            "name": "BACKUP_RETENTION_DAYS",
+            "label": "Backup retention days",
+            "description": "When configured, any archives older than this value will be rotated.",
+            "default": ""
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/etc/timezone",
+            "bind": "/etc/timezone",
+            "readonly": true
+        },
+        {
+            "container": "/etc/localtime",
+            "bind": "/etc/localtime",
+            "readonly": true
+        },
+        {
+            "container": "/var/run/docker.sock",
+            "bind": "/var/run/docker.sock",
+            "readonly": true
+        }
+    ],
+    "network": "bridge",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

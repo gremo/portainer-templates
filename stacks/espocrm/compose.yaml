@@ -1,0 +1,68 @@
+services:
+    espocrm:
+        container_name: ${COMPOSE_PROJECT_NAME}-espocrm
+        image: espocrm/espocrm:${IMAGE_TAG?:}
+        environment:
+            ESPOCRM_SITE_URL: https://${DOMAIN:?}
+            ESPOCRM_TIME_ZONE: ${TZ:?}
+            ESPOCRM_DATABASE_PLATFORM: Mysql
+            ESPOCRM_DATABASE_HOST: ${DB_HOST:?}
+            ESPOCRM_DATABASE_NAME: ${DB_NAME:?}
+            ESPOCRM_DATABASE_USER: ${DB_USER:?}
+            ESPOCRM_DATABASE_PASSWORD: ${DB_PASSWORD?:}
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-espocrm.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-espocrm.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "docker-volume-backup.stop-during-backup=true"
+
+    websocket:
+        container_name: ${COMPOSE_PROJECT_NAME}-websocket
+        image: espocrm/espocrm:${IMAGE_TAG?:}
+        environment:
+            ESPOCRM_CONFIG_USE_WEB_SOCKET: true
+            ESPOCRM_CONFIG_WEB_SOCKET_URL: "wss://${DOMAIN:?}/ws"
+            ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBSCRIBER_DSN: "tcp://*:7777"
+            ESPOCRM_CONFIG_WEB_SOCKET_ZERO_M_Q_SUBMISSION_DSN: "tcp://websocket:7777"
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        networks:
+            - proxy
+        entrypoint: docker-websocket.sh
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-websocket.rule=Host(`${DOMAIN:?}`) && PathPrefix(`/ws`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-websocket.entryPoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.services.${COMPOSE_PROJECT_NAME}-websocket.loadbalancer.server.port=8080"
+
+    daemon:
+        container_name: ${COMPOSE_PROJECT_NAME}-daemon
+        image: espocrm/espocrm:${IMAGE_TAG?:}
+        environment:
+            TZ: ${TZ:?}
+        volumes:
+            - espocrm-data:/var/www/html
+        entrypoint: docker-daemon.sh
+        restart: unless-stopped
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+volumes:
+    espocrm-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

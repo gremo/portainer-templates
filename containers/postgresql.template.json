@@ -1,0 +1,43 @@
+{
+    "title": "PostgreSQL",
+    "description": "Object-relational database management system (ORDBMS) known for its robustness, flexibility, and support for advanced data types and SQL features.",
+    "note": "Access the database from outside using the server domain and <code>5432</code> port.",
+    "categories": [
+        "Database"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/postgresql-logo.png",
+    "image": "postgres",
+    "name": "db",
+    "env": [
+        {
+            "name": "POSTGRES_PASSWORD",
+            "label": "Superuser password"
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/var/lib/postgresql/data"
+        }
+    ],
+    "ports": [
+        "5432:5432/tcp"
+    ],
+    "network": "traefik",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        },
+        {
+            "name": "docker-volume-backup.stop-during-backup",
+            "value": "true"
+        }
+    ]
+}

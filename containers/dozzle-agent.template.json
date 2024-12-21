@@ -1,0 +1,38 @@
+{
+    "title": "Dozzle Agent",
+    "description": "Agent for Dozzle, a lightweight real-time Docker log viewer for easy monitoring through a web interface.",
+    "categories": [
+        "Utility",
+        "Monitoring"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dozzle-logo.png",
+    "image": "amir20/dozzle",
+    "name": "dozzle-agent",
+    "env": [
+        {
+            "name": "DOZZLE_HOSTNAME",
+            "label": "Agent name",
+            "default": "",
+            "description": "Optiona agent name (shown on the UI)."
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/var/run/docker.sock",
+            "bind": "/var/run/docker.sock"
+        }
+    ],
+    "ports": [
+        "7007:7007/tcp"
+    ],
+    "network": "bridge",
+    "command": "agent",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}

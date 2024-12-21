@@ -1,0 +1,73 @@
+services:
+    planka:
+        container_name: ${COMPOSE_PROJECT_NAME}-planka
+        image: ghcr.io/plankanban/planka:latest
+        volumes:
+          - planka-user-avatars:/app/public/user-avatars
+          - planka-project-background-images:/app/public/project-background-images
+          - planka-attachments:/app/private/attachments
+        environment:
+            BASE_URL: https://${DOMAIN:?}
+            DATABASE_URL: postgres://planka:${DB_PASSWORD:?}@db.local/planka
+            DEFAULT_ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+            DEFAULT_ADMIN_USERNAME: admin
+            DEFAULT_ADMIN_PASSWORD: password
+            DEFAULT_ADMIN_NAME: Admin
+            SECRET_KEY: ${APP_KEY:?}
+            SMTP_HOST: ${MAIL_HOST:-}
+            SMTP_PORT: ${MAIL_PORT:-}
+            SMTP_SECURE: ${MAIL_SECURE:-}
+            SMTP_USER: ${MAIL_USERNAME:-}
+            SMTP_PASSWORD: ${MAIL_PASSWORD:-}
+            SMTP_FROM: ${MAIL_FROM:-}
+            TZ: ${TZ:?}
+        networks:
+            - default
+            - proxy
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=${TRAEFIK_NETWORK:?}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-planka.rule=Host(`${DOMAIN:?}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-planka.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+
+    db:
+        container_name: ${COMPOSE_PROJECT_NAME}-db
+        image: postgres:15-alpine
+        environment:
+            POSTGRES_USER: planka
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?}
+            POSTGRES_DB: planka
+            POSTGRES_HOST_AUTH_METHOD: trust
+            TZ: ${TZ:?}
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            default:
+                aliases:
+                  - db.local
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U planka"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        labels:
+            - "docker-volume-backup.stop-during-backup=true"
+
+volumes:
+    planka-attachments:
+    planka-project-background-images:
+    planka-user-avatars:
+    db-data:
+
+networks:
+    default:
+        internal: true
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

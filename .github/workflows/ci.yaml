@@ -1,0 +1,44 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ci.yaml'
+      - 'containers/**'
+      - 'stacks/**'
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Combine JSON templates
+        run: |
+          echo '{"version": "3", "templates": []}' > templates.json
+
+          id=1
+          for template in $(find containers -type f -name "*.json"); do
+            jq --slurpfile tmpl "$template" ".templates += [{\"id\": $id, \"type\": 1} + \$tmpl[0]]" templates.json > tmp.json && mv tmp.json templates.json
+            id=$((id + 1))
+          done
+          for template in $(find stacks -type f -name "*.json"); do
+            jq --slurpfile tmpl "$template" ".templates += [{\"id\": $id, \"type\": 3} + \$tmpl[0]]" templates.json > tmp.json && mv tmp.json templates.json
+            id=$((id + 1))
+          done
+
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: github-actions@github.com
+          message: Update templates
+          add: templates.json

@@ -1,0 +1,86 @@
+{
+    "title": "Diun",
+    "description": "Receive notifications when an image is updated on a Docker registry.",
+    "note": "Remember to set the container hostname that will be shown in notifications. Attach the <code>diun.enable=true</code> label to a service to receive notifications.",
+    "categories": [
+        "Utility",
+        "Monitoring"
+    ],
+    "platform": "linux",
+    "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/diun-logo.png",
+    "image": "crazymax/diun",
+    "name": "diun",
+    "env": [
+        {
+            "name": "DIUN_WATCH_SCHEDULE",
+            "label": "Schedule",
+            "description": "CRON expression to schedule the update check.",
+            "default": "0 */6 * * *"
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_HOST",
+            "label": "SMTP server host",
+            "default": ""
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_PORT",
+            "label": "SMTP server port",
+            "default": ""
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_SSL",
+            "label": "SMTP SSL",
+            "description": "Use a non empty value to enable SSL.",
+            "default": "true"
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_USERNAME",
+            "label": "SMTP username",
+            "default": ""
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_PASSWORD",
+            "label": "SMTP password",
+            "default": ""
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_FROM",
+            "label": "Sender email",
+            "default": ""
+        },
+        {
+            "name": "DIUN_NOTIF_MAIL_TO",
+            "label": "Recipients email",
+            "description": "Separate multiple recipents with comma.",
+            "default": ""
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        },
+        {
+            "name": "DIUN_PROVIDERS_DOCKER",
+            "default": "true",
+            "preset": true
+        }
+    ],
+    "volumes": [
+        {
+            "container": "/var/run/docker.sock",
+            "bind": "/var/run/docker.sock"
+        },
+        {
+            "container": "/data"
+        }
+    ],
+    "network": "bridge",
+    "command": "serve",
+    "restart_policy": "unless-stopped",
+    "labels": [
+        {
+            "name": "diun.enable",
+            "value": "true"
+        }
+    ]
+}
