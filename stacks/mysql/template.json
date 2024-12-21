@@ -1,0 +1,45 @@
+{
+    "title": "MySQL",
+    "description": "MySQL database server exposed via Traefik.",
+    "note": "Access MySQL at host <code>db:3306</code> from any service sharing Traefik network. Access from outside using the server domain and <code>3306</code> port.",
+    "categories": [
+        "Database"
+    ],
+    "platform": "linux",
+    "logo": "https://avatars.githubusercontent.com/u/2452804?s=60",
+    "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/mysql/compose.yaml"
+    },
+    "env": [
+        {
+            "name": "DB_ROOT_PASSWORD",
+            "label": "Root password",
+            "description": "Required root passsword."
+        },
+        {
+            "name": "IMAGE_TAG",
+            "label": "Image tag",
+            "default": "latest",
+            "description": "Docker tag to use."
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome",
+            "description": "Optional timezone."
+        },
+        {
+            "name": "TRAEFIK_ENTRYPOINT",
+            "label": "Traefik entrypoint",
+            "default": "mysql",
+            "description": "Required Traefik entrypoint (must expose port 3306)."
+        },
+        {
+            "name": "TRAEFIK_NETWORK",
+            "label": "Traefik network",
+            "default": "traefik",
+            "description": "Required Traefik network (must be created beforehand)."
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+    "title": "phpMyAdmin",
+    "description": "phpMyAdmin exposed via Traefik.",
+    "note": "Access phpMyAdmin at path <code>/phpmyadmin</code> of the configured domain.",
+    "categories": [
+        "Database"
+    ],
+    "platform": "linux",
+    "logo": "https://avatars.githubusercontent.com/u/1351977?s=60",
+    "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/phpmyadmin/compose.yaml"
+    },
+    "env": [
+        {
+            "name": "DOMAIN",
+            "label": "Domain",
+            "default": "",
+            "description": "Required primary domain (without http:// or https://)."
+        },
+        {
+            "name": "UPLOAD_LIMIT",
+            "label": "Upload limit",
+            "default": "",
+            "description": "Optional upload limit."
+        },
+        {
+            "name": "IMAGE_TAG",
+            "label": "Image tag",
+            "default": "latest",
+            "description": "Docker tag to use."
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome",
+            "description": "Optional timezone."
+        },
+        {
+            "name": "TRAEFIK_ENTRYPOINT",
+            "label": "Traefik entrypoint",
+            "default": "websecure",
+            "description": "Required Traefik entrypoint (must be secure)."
+        },
+        {
+            "name": "TRAEFIK_NETWORK",
+            "label": "Traefik network",
+            "default": "traefik",
+            "description": "Required Traefik network (must be created beforehand)."
+        }
+    ]
+}

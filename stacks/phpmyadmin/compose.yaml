@@ -1,0 +1,26 @@
+services:
+    phpmyadmin:
+        image: phpmyadmin:${IMAGE_TAG:?}
+        environment:
+            PMA_ARBITRARY: true
+            UPLOAD_LIMIT: ${UPLOAD_LIMIT:-}
+            PMA_ABSOLUTE_URI: https://${DOMAIN?:}/phpmyadmin/
+            HIDE_PHP_VERSION: true
+            TZ: ${TZ?-}
+        networks:
+            - proxy
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.middlewares.phpmyadmin-slash.redirectregex.replacement=$${1}/"
+            - "traefik.http.middlewares.phpmyadmin-slash.redirectregex.permanent=true"
+            - "traefik.http.middlewares.phpmyadmin-strip.stripprefix.prefixes=/phpmyadmin"
+            - "traefik.http.middlewares.phpmyadmin-slash.redirectregex.regex=^(https?://[^/]+/[^/]+)$$"
+            - "traefik.http.routers.phpmyadmin.rule=Host(`${DOMAIN?:}`) && PathPrefix(`/phpmyadmin`)"
+            - "traefik.http.routers.phpmyadmin.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.http.routers.phpmyadmin.middlewares=phpmyadmin-slash,phpmyadmin-strip"
+
+networks:
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true

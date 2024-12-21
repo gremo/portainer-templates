@@ -1,0 +1,39 @@
+{
+    "title": "MariaDB",
+    "description": "MariaDB is an open-source relational database system designed for performance, scalability, and reliability.",
+    "categories": [
+        "Database"
+    ],
+    "platform": "linux",
+    "logo": "https://avatars.githubusercontent.com/u/4739304?s=60",
+    "image": "mariadb",
+    "env": [
+        {
+            "name": "MARIADB_ROOT_PASSWORD",
+            "label": "Root password"
+        },
+        {
+            "name": "MARIADB_AUTO_UPGRADE",
+            "default": "true",
+            "preset": true
+        },
+        {
+            "name": "MARIADB_DISABLE_UPGRADE_BACKUP",
+            "default": "true",
+            "preset": true
+        },
+        {
+            "name": "TZ",
+            "label": "Timezone",
+            "default": "Europe/Rome"
+        }
+    ],
+    "ports": [
+        "3306/tcp"
+    ],
+    "volumes": [
+        {
+            "container": "/var/lib/mysql"
+        }
+    ]
+}

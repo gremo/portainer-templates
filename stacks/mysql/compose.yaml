@@ -1,0 +1,31 @@
+services:
+    db:
+        image: mysql:${IMAGE_TAG?:}
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+            TZ: ${TZ:?}
+        volumes:
+            - db-data:/var/lib/mysql
+        networks:
+            - proxy
+        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+            start_period: 10s
+            interval: 10s
+            timeout: 5s
+            retries: 3
+        labels:
+            - "traefik.enable=true"
+            - "traefik.tcp.routers.mysql.rule=HostSNI(`*`)"
+            - "traefik.tcp.routers.mysql.entrypoints=${TRAEFIK_ENTRYPOINT:?}"
+            - "traefik.tcp.services.mysql.loadbalancer.server.port=3306"
+
+volumes:
+    db-data:
+
+networks:
+    proxy:
+        name: ${TRAEFIK_NETWORK:?}
+        external: true
