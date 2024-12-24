@@ -1,4 +1,119 @@
 {
-    "version": 3,
-    "templates": {}
+  "version": "3",
+  "templates": [
+    {
+      "type": 1,
+      "title": "Diun",
+      "description": "Receive notifications when an image is updated on a Docker registry.",
+      "note": "Remember to set the container hostname that will be shown in notifications. Attach the <code>diun.enable=true</code> label to a service to receive notifications.",
+      "categories": [
+        "Utility"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/crazy-max/diun/master/.res/diun.png",
+      "image": "crazymax/diun",
+      "env": [
+        {
+          "name": "DIUN_WATCH_SCHEDULE",
+          "label": "Schedule",
+          "description": "CRON expression to schedule the update check.",
+          "default": "0 */6 * * *"
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_HOST",
+          "label": "SMTP server host",
+          "default": ""
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_PORT",
+          "label": "SMTP server port",
+          "default": ""
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_SSL",
+          "label": "SMTP SSL",
+          "description": "Use a non empty value to enable SSL.",
+          "default": "true"
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_USERNAME",
+          "label": "SMTP username",
+          "default": ""
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_PASSWORD",
+          "label": "SMTP password",
+          "default": ""
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_FROM",
+          "label": "Sender email",
+          "default": ""
+        },
+        {
+          "name": "DIUN_NOTIF_MAIL_TO",
+          "label": "Recipients email",
+          "description": "Separate multiple recipents with comma.",
+          "default": ""
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
+        },
+        {
+          "name": "DIUN_PROVIDERS_DOCKER",
+          "default": "true",
+          "preset": true
+        }
+      ],
+      "volumes": [
+        {
+          "container": "/var/run/docker.sock",
+          "bind": "/var/run/docker.sock"
+        }
+      ],
+      "command": "serve"
+    },
+    {
+      "type": 1,
+      "title": "MariaDB",
+      "description": "MariaDB is an open-source relational database system designed for performance, scalability, and reliability.",
+      "categories": [
+        "Database"
+      ],
+      "platform": "linux",
+      "logo": "https://avatars.githubusercontent.com/u/4739304?s=60",
+      "image": "mariadb",
+      "env": [
+        {
+          "name": "MARIADB_ROOT_PASSWORD",
+          "label": "Root password"
+        },
+        {
+          "name": "MARIADB_AUTO_UPGRADE",
+          "default": "true",
+          "preset": true
+        },
+        {
+          "name": "MARIADB_DISABLE_UPGRADE_BACKUP",
+          "default": "true",
+          "preset": true
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
+        }
+      ],
+      "ports": [
+        "3306/tcp"
+      ],
+      "volumes": [
+        {
+          "container": "/var/lib/mysql"
+        }
+      ]
+    }
+  ]
 }
