@@ -2,97 +2,89 @@
   "version": "3",
   "templates": [
     {
+      "id": 1,
       "type": 1,
-      "title": "Doctrine Volume Backup",
-      "description": "Backup Docker volumes locally or to any S3, WebDAV, Azure Blob Storage, Dropbox or SSH compatible storage.",
-      "note": "Remember to configure the remote storage using the <a href=\"https://https://offen.github.io/docker-volume-backup/reference/\" target=\"_blank\">configuration variables</a>.",
+      "title": "MySQL",
+      "description": "Relational database management system (RDBMS).",
+      "note": "Access the database from outside using the server domain and <code>3306</code> port.",
       "categories": [
-        "Utility",
-        "Monitoring"
+        "Database"
       ],
       "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dvb-logo.png",
-      "image": "offen/docker-volume-backup",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mysql-logo.png",
+      "image": "mysql",
+      "name": "db",
       "env": [
         {
-          "name": "BACKUP_CRON_EXPRESSION",
-          "label": "Backup frequency",
-          "description": "The cron expression specifying how often backups should run.",
-          "default": "@daily"
+          "name": "MYSQL_ROOT_PASSWORD",
+          "label": "Root password"
         },
         {
-          "name": "BACKUP_RETENTION_DAYS",
-          "label": "Backup retention days",
-          "description": "When configured, any archives older than this value will be rotated.",
-          "default": ""
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
         }
       ],
       "volumes": [
         {
-          "container": "/etc/timezone",
-          "bind": "/etc/timezone",
-          "readonly": true
-        },
-        {
-          "container": "/etc/localtime",
-          "bind": "/etc/localtime",
-          "readonly": true
-        },
-        {
-          "container": "/var/run/docker.sock",
-          "bind": "/var/run/docker.sock",
-          "readonly": true
+          "container": "/var/lib/mysql"
         }
       ],
-      "network": "bridge",
+      "ports": [
+        "3306:3306/tcp"
+      ],
+      "network": "traefik",
+      "command": "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
       "restart_policy": "unless-stopped",
       "labels": [
         {
           "name": "diun.enable",
           "value": "true"
+        },
+        {
+          "name": "docker-volume-backup.stop-during-backup",
+          "value": "true"
         }
       ]
     },
     {
+      "id": 2,
       "type": 1,
-      "title": "Homarr",
-      "description": "A simple, yet powerful dashboard for your server. This version exposes the application via Traefik.",
-      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name.",
+      "title": "Uptime Kuma",
+      "description": "Monitoring tool that helps track the uptime and performance of websites and services. This version exposes the app via Traefik.",
+      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the application at the configured domain.",
       "categories": [
         "Utility"
       ],
       "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/homarr-logo.png",
-      "image": "ghcr.io/ajnart/homarr",
-      "name": "homarr",
-      "network": "traefik",
-      "restart_policy": "unless-stopped",
-      "volumes": [
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/uptime-kuma-logo.png",
+      "image": "louislam/uptime-kuma",
+      "name": "uptime-kuma",
+      "env": [
         {
-          "container": "/app/data/configs"
-        },
-        {
-          "container": "/app/public/icons"
-        },
-        {
-          "container": "/data"
-        },
-        {
-          "container": "/var/run/docker.sock",
-          "bind": "/var/run/docker.sock"
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
         }
       ],
+      "volumes": [
+        {
+          "container": "/app/data"
+        }
+      ],
+      "network": "traefik",
+      "restart_policy": "unless-stopped",
       "labels": [
         {
           "name": "traefik.enable",
           "value": "true"
         },
         {
-          "name": "traefik.http.routers.homarr.rule",
+          "name": "traefik.http.routers.uptime-kuma.rule",
           "value": "Host(`example.com`)"
         },
         {
-          "name": "traefik.http.routers.homarr.entrypoints",
+          "name": "traefik.http.routers.uptime-kuma.entrypoints",
           "value": "websecure"
         },
         {
@@ -102,6 +94,103 @@
       ]
     },
     {
+      "id": 3,
+      "type": 1,
+      "title": "MariaDB",
+      "description": "Relational database management system (RDBMS), a fork of MySQL, known for its speed, reliability, and ease of use. ",
+      "note": "Access the database from outside using the server domain and <code>3306</code> port.",
+      "categories": [
+        "Database"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mariadb-logo.png",
+      "image": "mariadb",
+      "name": "db",
+      "env": [
+        {
+          "name": "MARIADB_ROOT_PASSWORD",
+          "label": "Root password"
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
+        },
+        {
+          "name": "MARIADB_AUTO_UPGRADE",
+          "default": "true",
+          "preset": true
+        },
+        {
+          "name": "MARIADB_DISABLE_UPGRADE_BACKUP",
+          "default": "true",
+          "preset": true
+        }
+      ],
+      "volumes": [
+        {
+          "container": "/var/lib/mysql"
+        }
+      ],
+      "ports": [
+        "3306:3306/tcp"
+      ],
+      "network": "traefik",
+      "command": "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
+      "restart_policy": "unless-stopped",
+      "labels": [
+        {
+          "name": "diun.enable",
+          "value": "true"
+        },
+        {
+          "name": "docker-volume-backup.stop-during-backup",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": 1,
+      "title": "Dozzle Agent",
+      "description": "Agent for Dozzle, a lightweight real-time Docker log viewer for easy monitoring through a web interface.",
+      "categories": [
+        "Utility",
+        "Monitoring"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dozzle-logo.png",
+      "image": "amir20/dozzle",
+      "name": "dozzle-agent",
+      "env": [
+        {
+          "name": "DOZZLE_HOSTNAME",
+          "label": "Agent name",
+          "default": "",
+          "description": "Optiona agent name (shown on the UI)."
+        }
+      ],
+      "volumes": [
+        {
+          "container": "/var/run/docker.sock",
+          "bind": "/var/run/docker.sock"
+        }
+      ],
+      "ports": [
+        "7007:7007/tcp"
+      ],
+      "network": "bridge",
+      "command": "agent",
+      "restart_policy": "unless-stopped",
+      "labels": [
+        {
+          "name": "diun.enable",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 5,
       "type": 1,
       "title": "Mercure",
       "description": "Real-time communications protocol designed to be fast, reliable, and battery-efficient. This version exposes the application via Traefik.",
@@ -165,128 +254,52 @@
       ]
     },
     {
+      "id": 6,
       "type": 1,
-      "title": "phpMyAdmin",
-      "description": "Web-based tool for managing MySQL and MariaDB databases. This version exposes the application via Traefik.",
-      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name, which should match the domain specified in <code>PMA_ABSOLUTE_URI</code>. Access the application at path <code>/phpmyadmin</code> of the configured domain.",
+      "title": "Doctrine Volume Backup",
+      "description": "Backup Docker volumes locally or to any S3, WebDAV, Azure Blob Storage, Dropbox or SSH compatible storage.",
+      "note": "Remember to configure the remote storage using the <a href=\"https://https://offen.github.io/docker-volume-backup/reference/\" target=\"_blank\">configuration variables</a>.",
       "categories": [
-        "Database",
-        "Utility"
+        "Utility",
+        "Monitoring"
       ],
       "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/phpmyadmin-logo.png",
-      "image": "phpmyadmin",
-      "name": "phpmyadmin",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dvb-logo.png",
+      "image": "offen/docker-volume-backup",
       "env": [
         {
-          "name": "PMA_ABSOLUTE_URI",
-          "label": "Absolute URL",
-          "default": "https://example.com/phpmyadmin/",
-          "description": "Required absolute URL of this istance."
+          "name": "BACKUP_CRON_EXPRESSION",
+          "label": "Backup frequency",
+          "description": "The cron expression specifying how often backups should run.",
+          "default": "@daily"
         },
         {
-          "name": "PMA_HOST",
-          "label": "Server address",
-          "description": "Required address/host name of the MySQL server.",
-          "default": "db"
-        },
-        {
-          "name": "UPLOAD_LIMIT",
-          "label": "Upload limit",
-          "default": "",
-          "description": "Optional upload limit."
-        },
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome"
-        },
-        {
-          "name": "HIDE_PHP_VERSION",
-          "default": "true",
-          "preset": true
-        }
-      ],
-      "network": "traefik",
-      "restart_policy": "unless-stopped",
-      "labels": [
-        {
-          "name": "traefik.enable",
-          "value": "true"
-        },
-        {
-          "name": "traefik.http.routers.phpmyadmin.rule",
-          "value": "Host(`example.com`) && PathPrefix(`/phpmyadmin`)"
-        },
-        {
-          "name": "traefik.http.routers.phpmyadmin.entrypoints",
-          "value": "websecure"
-        },
-        {
-          "name": "traefik.http.routers.phpmyadmin.middlewares",
-          "value": "phpmyadmin-slash,phpmyadmin-strip"
-        },
-        {
-          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.regex",
-          "value": "^(https?://[^/]+/[^/]+)$"
-        },
-        {
-          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.replacement",
-          "value": "${1}/"
-        },
-        {
-          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.permanent",
-          "value": "true"
-        },
-        {
-          "name": "traefik.http.middlewares.phpmyadmin-strip.stripprefix.prefixes",
-          "value": "/phpmyadmin"
-        },
-        {
-          "name": "diun.enable",
-          "value": "true"
-        }
-      ]
-    },
-    {
-      "type": 1,
-      "title": "Uptime Kuma",
-      "description": "Monitoring tool that helps track the uptime and performance of websites and services. This version exposes the app via Traefik.",
-      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the application at the configured domain.",
-      "categories": [
-        "Utility"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/uptime-kuma-logo.png",
-      "image": "louislam/uptime-kuma",
-      "name": "uptime-kuma",
-      "env": [
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome"
+          "name": "BACKUP_RETENTION_DAYS",
+          "label": "Backup retention days",
+          "description": "When configured, any archives older than this value will be rotated.",
+          "default": ""
         }
       ],
       "volumes": [
         {
-          "container": "/app/data"
+          "container": "/etc/timezone",
+          "bind": "/etc/timezone",
+          "readonly": true
+        },
+        {
+          "container": "/etc/localtime",
+          "bind": "/etc/localtime",
+          "readonly": true
+        },
+        {
+          "container": "/var/run/docker.sock",
+          "bind": "/var/run/docker.sock",
+          "readonly": true
         }
       ],
-      "network": "traefik",
+      "network": "bridge",
       "restart_policy": "unless-stopped",
       "labels": [
-        {
-          "name": "traefik.enable",
-          "value": "true"
-        },
-        {
-          "name": "traefik.http.routers.uptime-kuma.rule",
-          "value": "Host(`example.com`)"
-        },
-        {
-          "name": "traefik.http.routers.uptime-kuma.entrypoints",
-          "value": "websecure"
-        },
         {
           "name": "diun.enable",
           "value": "true"
@@ -294,6 +307,53 @@
       ]
     },
     {
+      "id": 7,
+      "type": 1,
+      "title": "Docker Autoheal",
+      "description": "Monitor and restart unhealthy docker containers.",
+      "categories": [
+        "Utility",
+        "Monitoring"
+      ],
+      "platform": "linux",
+      "image": "willfarrell/autoheal",
+      "name": "autoheal",
+      "env": [
+        {
+          "name": "AUTOHEAL_INTERVAL",
+          "label": "Check interval",
+          "description": "Check interval (in seconds).",
+          "default": "30"
+        },
+        {
+          "name": "AUTOHEAL_ONLY_MONITOR_RUNNING",
+          "default": "true",
+          "preset": true
+        }
+      ],
+      "volumes": [
+        {
+          "container": "/etc/localtime",
+          "bind": "/etc/localtime",
+          "readonly": true
+        },
+        {
+          "container": "/var/run/docker.sock",
+          "bind": "/var/run/docker.sock",
+          "readonly": true
+        }
+      ],
+      "network": "none",
+      "restart_policy": "unless-stopped",
+      "labels": [
+        {
+          "name": "diun.enable",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 8,
       "type": 1,
       "title": "Dozzle",
       "description": "Lightweight real-time Docker log viewer for easy monitoring through a web interface. This version exposes the application via Traefik.",
@@ -342,6 +402,182 @@
       ]
     },
     {
+      "id": 9,
+      "type": 1,
+      "title": "Homarr",
+      "description": "A simple, yet powerful dashboard for your server. This version exposes the application via Traefik.",
+      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name.",
+      "categories": [
+        "Utility"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/homarr-logo.png",
+      "image": "ghcr.io/ajnart/homarr",
+      "name": "homarr",
+      "network": "traefik",
+      "restart_policy": "unless-stopped",
+      "volumes": [
+        {
+          "container": "/app/data/configs"
+        },
+        {
+          "container": "/app/public/icons"
+        },
+        {
+          "container": "/data"
+        },
+        {
+          "container": "/var/run/docker.sock",
+          "bind": "/var/run/docker.sock"
+        }
+      ],
+      "labels": [
+        {
+          "name": "traefik.enable",
+          "value": "true"
+        },
+        {
+          "name": "traefik.http.routers.homarr.rule",
+          "value": "Host(`example.com`)"
+        },
+        {
+          "name": "traefik.http.routers.homarr.entrypoints",
+          "value": "websecure"
+        },
+        {
+          "name": "diun.enable",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": 1,
+      "title": "Shlink",
+      "description": "URL shortener that allows users to create, manage, and track shortened links. This version exposes the API via Traefik (requires a running database).",
+      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the API at the configured domain. To generate an API key, run <code>php bin/cli api-key:generate</code> inside the Shlink container. Use this key with the configured domain in the <a href=\"https://app.shlink.io\" target=\"_blank\">Shlink app</a>.",
+      "categories": [
+        "Utility"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/shlink-logo.png",
+      "image": "shlinkio/shlink",
+      "env": [
+        {
+          "name": "DB_DRIVER",
+          "label": "Database driver",
+          "default": "db",
+          "description": "Required database driver.",
+          "select": [
+            {
+              "text": "MariaDB",
+              "value": "maria",
+              "default": true
+            },
+            {
+              "text": "MySQL",
+              "value": "mysql"
+            }
+          ]
+        },
+        {
+          "name": "DB_HOST",
+          "label": "Database host",
+          "default": "db",
+          "description": "Required database host."
+        },
+        {
+          "name": "DB_USER",
+          "label": "Database user",
+          "default": "shlink",
+          "description": "Required database user."
+        },
+        {
+          "name": "DB_PASSWORD",
+          "label": "Database password",
+          "default": "",
+          "description": "Required database password."
+        },
+        {
+          "name": "DB_NAME",
+          "label": "Database name",
+          "default": "shlink",
+          "description": "Required database name."
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
+        }
+      ],
+      "network": "traefik",
+      "restart_policy": "unless-stopped",
+      "labels": [
+        {
+          "name": "traefik.enable",
+          "value": "true"
+        },
+        {
+          "name": "traefik.http.routers.shlink.rule",
+          "value": "Host(`example.com`)"
+        },
+        {
+          "name": "traefik.http.routers.shlink.entrypoints",
+          "value": "websecure"
+        },
+        {
+          "name": "diun.enable",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": 1,
+      "title": "PostgreSQL",
+      "description": "Object-relational database management system (ORDBMS) known for its robustness, flexibility, and support for advanced data types and SQL features.",
+      "note": "Access the database from outside using the server domain and <code>5432</code> port.",
+      "categories": [
+        "Database"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/postgresql-logo.png",
+      "image": "postgres",
+      "name": "db",
+      "env": [
+        {
+          "name": "POSTGRES_PASSWORD",
+          "label": "Superuser password"
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome"
+        }
+      ],
+      "volumes": [
+        {
+          "container": "/var/lib/postgresql/data"
+        }
+      ],
+      "ports": [
+        "5432:5432/tcp"
+      ],
+      "network": "traefik",
+      "restart_policy": "unless-stopped",
+      "labels": [
+        {
+          "name": "diun.enable",
+          "value": "true"
+        },
+        {
+          "name": "docker-volume-backup.stop-during-backup",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "id": 12,
       "type": 1,
       "title": "Diun",
       "description": "Receive notifications when an image is updated on a Docker registry.",
@@ -429,62 +665,47 @@
       ]
     },
     {
+      "id": 13,
       "type": 1,
-      "title": "Shlink",
-      "description": "URL shortener that allows users to create, manage, and track shortened links. This version exposes the API via Traefik (requires a running database).",
-      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name. Access the API at the configured domain. To generate an API key, run <code>php bin/cli api-key:generate</code> inside the Shlink container. Use this key with the configured domain in the <a href=\"https://app.shlink.io\" target=\"_blank\">Shlink app</a>.",
+      "title": "phpMyAdmin",
+      "description": "Web-based tool for managing MySQL and MariaDB databases. This version exposes the application via Traefik.",
+      "note": "Attach the container to the Traefik network (do not expose any ports) and adjust the labels to match your system, particularly the domain name, which should match the domain specified in <code>PMA_ABSOLUTE_URI</code>. Access the application at path <code>/phpmyadmin</code> of the configured domain.",
       "categories": [
+        "Database",
         "Utility"
       ],
       "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/shlink-logo.png",
-      "image": "shlinkio/shlink",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/phpmyadmin-logo.png",
+      "image": "phpmyadmin",
+      "name": "phpmyadmin",
       "env": [
         {
-          "name": "DB_DRIVER",
-          "label": "Database driver",
-          "default": "db",
-          "description": "Required database driver.",
-          "select": [
-            {
-              "text": "MariaDB",
-              "value": "maria",
-              "default": true
-            },
-            {
-              "text": "MySQL",
-              "value": "mysql"
-            }
-          ]
+          "name": "PMA_ABSOLUTE_URI",
+          "label": "Absolute URL",
+          "default": "https://example.com/phpmyadmin/",
+          "description": "Required absolute URL of this istance."
         },
         {
-          "name": "DB_HOST",
-          "label": "Database host",
-          "default": "db",
-          "description": "Required database host."
+          "name": "PMA_HOST",
+          "label": "Server address",
+          "description": "Required address/host name of the MySQL server.",
+          "default": "db"
         },
         {
-          "name": "DB_USER",
-          "label": "Database user",
-          "default": "shlink",
-          "description": "Required database user."
-        },
-        {
-          "name": "DB_PASSWORD",
-          "label": "Database password",
+          "name": "UPLOAD_LIMIT",
+          "label": "Upload limit",
           "default": "",
-          "description": "Required database password."
-        },
-        {
-          "name": "DB_NAME",
-          "label": "Database name",
-          "default": "shlink",
-          "description": "Required database name."
+          "description": "Optional upload limit."
         },
         {
           "name": "TZ",
           "label": "Timezone",
           "default": "Europe/Rome"
+        },
+        {
+          "name": "HIDE_PHP_VERSION",
+          "default": "true",
+          "preset": true
         }
       ],
       "network": "traefik",
@@ -495,58 +716,33 @@
           "value": "true"
         },
         {
-          "name": "traefik.http.routers.shlink.rule",
-          "value": "Host(`example.com`)"
+          "name": "traefik.http.routers.phpmyadmin.rule",
+          "value": "Host(`example.com`) && PathPrefix(`/phpmyadmin`)"
         },
         {
-          "name": "traefik.http.routers.shlink.entrypoints",
+          "name": "traefik.http.routers.phpmyadmin.entrypoints",
           "value": "websecure"
         },
         {
-          "name": "diun.enable",
+          "name": "traefik.http.routers.phpmyadmin.middlewares",
+          "value": "phpmyadmin-slash,phpmyadmin-strip"
+        },
+        {
+          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.regex",
+          "value": "^(https?://[^/]+/[^/]+)$"
+        },
+        {
+          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.replacement",
+          "value": "${1}/"
+        },
+        {
+          "name": "traefik.http.middlewares.phpmyadmin-slash.redirectregex.permanent",
           "value": "true"
-        }
-      ]
-    },
-    {
-      "type": 1,
-      "title": "Docker Autoheal",
-      "description": "Monitor and restart unhealthy docker containers.",
-      "categories": [
-        "Utility",
-        "Monitoring"
-      ],
-      "platform": "linux",
-      "image": "willfarrell/autoheal",
-      "name": "autoheal",
-      "env": [
-        {
-          "name": "AUTOHEAL_INTERVAL",
-          "label": "Check interval",
-          "description": "Check interval (in seconds).",
-          "default": "30"
         },
         {
-          "name": "AUTOHEAL_ONLY_MONITOR_RUNNING",
-          "default": "true",
-          "preset": true
-        }
-      ],
-      "volumes": [
-        {
-          "container": "/etc/localtime",
-          "bind": "/etc/localtime",
-          "readonly": true
+          "name": "traefik.http.middlewares.phpmyadmin-strip.stripprefix.prefixes",
+          "value": "/phpmyadmin"
         },
-        {
-          "container": "/var/run/docker.sock",
-          "bind": "/var/run/docker.sock",
-          "readonly": true
-        }
-      ],
-      "network": "none",
-      "restart_policy": "unless-stopped",
-      "labels": [
         {
           "name": "diun.enable",
           "value": "true"
@@ -554,189 +750,196 @@
       ]
     },
     {
-      "type": 1,
-      "title": "PostgreSQL",
-      "description": "Object-relational database management system (ORDBMS) known for its robustness, flexibility, and support for advanced data types and SQL features.",
-      "note": "Access the database from outside using the server domain and <code>5432</code> port.",
+      "id": 14,
+      "type": 3,
+      "title": "Planka (standalone)",
+      "description": "Elegant open source project tracking. This version exposes the app via Traefik and comes bundled with PostgreSQL.",
+      "note": "Generate the application key <code>openssl rand -hex 64</code>. Access the application at the configured domain. Remove the <code>ADMIN_EMAIL</code> variable to be able to edit the admin user.",
       "categories": [
-        "Database"
+        "Utility"
       ],
       "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/postgresql-logo.png",
-      "image": "postgres",
-      "name": "db",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/planka-logo.png",
+      "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/planka-full/compose.yaml"
+      },
       "env": [
         {
-          "name": "POSTGRES_PASSWORD",
-          "label": "Superuser password"
+          "name": "DOMAIN",
+          "label": "Domain",
+          "description": "Required domain name (without http:// or https://)."
         },
         {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome"
-        }
-      ],
-      "volumes": [
-        {
-          "container": "/var/lib/postgresql/data"
-        }
-      ],
-      "ports": [
-        "5432:5432/tcp"
-      ],
-      "network": "traefik",
-      "restart_policy": "unless-stopped",
-      "labels": [
-        {
-          "name": "diun.enable",
-          "value": "true"
+          "name": "APP_KEY",
+          "label": "Application key",
+          "description": "Required unique app key for encryption."
         },
         {
-          "name": "docker-volume-backup.stop-during-backup",
-          "value": "true"
-        }
-      ]
-    },
-    {
-      "type": 1,
-      "title": "MariaDB",
-      "description": "Relational database management system (RDBMS), a fork of MySQL, known for its speed, reliability, and ease of use. ",
-      "note": "Access the database from outside using the server domain and <code>3306</code> port.",
-      "categories": [
-        "Database"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mariadb-logo.png",
-      "image": "mariadb",
-      "name": "db",
-      "env": [
-        {
-          "name": "MARIADB_ROOT_PASSWORD",
-          "label": "Root password"
-        },
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome"
-        },
-        {
-          "name": "MARIADB_AUTO_UPGRADE",
-          "default": "true",
-          "preset": true
-        },
-        {
-          "name": "MARIADB_DISABLE_UPGRADE_BACKUP",
-          "default": "true",
-          "preset": true
-        }
-      ],
-      "volumes": [
-        {
-          "container": "/var/lib/mysql"
-        }
-      ],
-      "ports": [
-        "3306:3306/tcp"
-      ],
-      "network": "traefik",
-      "command": "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
-      "restart_policy": "unless-stopped",
-      "labels": [
-        {
-          "name": "diun.enable",
-          "value": "true"
-        },
-        {
-          "name": "docker-volume-backup.stop-during-backup",
-          "value": "true"
-        }
-      ]
-    },
-    {
-      "type": 1,
-      "title": "MySQL",
-      "description": "Relational database management system (RDBMS).",
-      "note": "Access the database from outside using the server domain and <code>3306</code> port.",
-      "categories": [
-        "Database"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/mysql-logo.png",
-      "image": "mysql",
-      "name": "db",
-      "env": [
-        {
-          "name": "MYSQL_ROOT_PASSWORD",
-          "label": "Root password"
-        },
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome"
-        }
-      ],
-      "volumes": [
-        {
-          "container": "/var/lib/mysql"
-        }
-      ],
-      "ports": [
-        "3306:3306/tcp"
-      ],
-      "network": "traefik",
-      "command": "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci",
-      "restart_policy": "unless-stopped",
-      "labels": [
-        {
-          "name": "diun.enable",
-          "value": "true"
-        },
-        {
-          "name": "docker-volume-backup.stop-during-backup",
-          "value": "true"
-        }
-      ]
-    },
-    {
-      "type": 1,
-      "title": "Dozzle Agent",
-      "description": "Agent for Dozzle, a lightweight real-time Docker log viewer for easy monitoring through a web interface.",
-      "categories": [
-        "Utility",
-        "Monitoring"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/dozzle-logo.png",
-      "image": "amir20/dozzle",
-      "name": "dozzle-agent",
-      "env": [
-        {
-          "name": "DOZZLE_HOSTNAME",
-          "label": "Agent name",
+          "name": "DB_PASSWORD",
+          "label": "Database password",
           "default": "",
-          "description": "Optiona agent name (shown on the UI)."
-        }
-      ],
-      "volumes": [
+          "description": "Required password for planka user."
+        },
         {
-          "container": "/var/run/docker.sock",
-          "bind": "/var/run/docker.sock"
-        }
-      ],
-      "ports": [
-        "7007:7007/tcp"
-      ],
-      "network": "bridge",
-      "command": "agent",
-      "restart_policy": "unless-stopped",
-      "labels": [
+          "name": "MAIL_HOST",
+          "label": "SMTP server host",
+          "default": ""
+        },
         {
-          "name": "diun.enable",
-          "value": "true"
+          "name": "MAIL_PORT",
+          "label": "SMTP server port",
+          "default": ""
+        },
+        {
+          "name": "MAIL_SECURE",
+          "label": "SMTP encryption",
+          "description": "Connection encryption (\"true\" or \"null\").",
+          "default": ""
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "label": "SMTP username",
+          "default": ""
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "label": "SMTP password",
+          "default": ""
+        },
+        {
+          "name": "MAIL_FROM",
+          "label": "Sender email",
+          "default": ""
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome",
+          "description": "Timezone (used for all containers)."
+        },
+        {
+          "name": "TRAEFIK_NETWORK",
+          "label": "Traefik network",
+          "default": "traefik",
+          "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+          "name": "TRAEFIK_ENTRYPOINT",
+          "label": "Traefik entrypoint",
+          "default": "websecure",
+          "description": "Required Traefik entrypoint (must be secure)."
+        },
+        {
+          "name": "ADMIN_EMAIL",
+          "default": "admin@admin.com",
+          "preset": true
         }
       ]
     },
     {
+      "id": 15,
+      "type": 3,
+      "title": "Rallly (standalone)",
+      "description": "Platform designed for creating real-time polls and surveys. This version exposes the API via Traefik and comes bundled with PostgreSQL.",
+      "note": "Generate the application key <code>openssl rand -base64 32</code>. Access the application at the configured domain.",
+      "categories": [
+        "Utility"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/rallly-logo.png",
+      "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/rallly-full/compose.yaml"
+      },
+      "env": [
+        {
+          "name": "DOMAIN",
+          "label": "Domain",
+          "description": "Required domain name (without http:// or https://)."
+        },
+        {
+          "name": "APP_KEY",
+          "label": "Application key",
+          "description": "Required unique app key for encryption."
+        },
+        {
+          "name": "ALLOWED_EMAILS",
+          "label": "Allowed emails",
+          "description": "Email that are allowed to register, comma separated, wildcard support."
+        },
+        {
+          "name": "DB_PASSWORD",
+          "label": "Database password",
+          "default": "",
+          "description": "Required password for rallly user."
+        },
+        {
+          "name": "MAIL_HOST",
+          "label": "SMTP server host",
+          "default": ""
+        },
+        {
+          "name": "MAIL_PORT",
+          "label": "SMTP server port",
+          "default": ""
+        },
+        {
+          "name": "MAIL_SECURE",
+          "label": "SMTP SSL",
+          "description": "Use true to enable SSL.",
+          "default": "true"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "label": "SMTP username",
+          "default": ""
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "label": "SMTP password",
+          "default": ""
+        },
+        {
+          "name": "SUPPORT_EMAIL",
+          "label": "Support email",
+          "description": "Required email for support queries.",
+          "default": ""
+        },
+        {
+          "name": "NOREPLY_EMAIL",
+          "label": "No-reply email",
+          "description": "Optional email for all transactional emails (fallback to support email).",
+          "default": ""
+        },
+        {
+          "name": "NOREPLY_EMAIL_NAME",
+          "label": "No-reply name",
+          "description": "Used as the sender name for all transactional emails.",
+          "default": ""
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome",
+          "description": "Timezone (used for all containers)."
+        },
+        {
+          "name": "TRAEFIK_NETWORK",
+          "label": "Traefik network",
+          "default": "traefik",
+          "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+          "name": "TRAEFIK_ENTRYPOINT",
+          "label": "Traefik entrypoint",
+          "default": "websecure",
+          "description": "Required Traefik entrypoint (must be secure)."
+        }
+      ]
+    },
+    {
+      "id": 16,
       "type": 3,
       "title": "BookStack (standalone)",
       "description": "Platform for creating and organizing documentation, wikis, and knowledge bases. This version exposes the app via Traefik and comes bundled with MariaDB and phpMyAdmin.",
@@ -843,6 +1046,7 @@
       ]
     },
     {
+      "id": 17,
       "type": 3,
       "title": "EspoCRM",
       "description": "Customer relationship management (CRM) software designed to help businesses manage their sales, marketing, and customer support processes. This version exposes the app via Traefik (requires a running database).",
@@ -913,6 +1117,77 @@
       ]
     },
     {
+      "id": 18,
+      "type": 3,
+      "title": "Directus (standalone)",
+      "description": "Headless CMS and API platform for managing and interacting with SQL databases. This version exposes the app via Traefik and comes bundled with MariaDB and phpMyAdmin.",
+      "note": "Generate the application secret <code>openssl rand -hex 16</code>. Access the application at the configured domain using the credentials <code>admin@admin.com</code> / <code>password</code>. Access phpMyAdmin at the path <code>/phpmyadmin</code> using the <code>directus</code> user or <code>root</code>, along with their respective configured passwords.",
+      "categories": [
+        "CMS"
+      ],
+      "platform": "linux",
+      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/directus-logo.png",
+      "repository": {
+        "url": "https://github.com/gremo/portainer-templates",
+        "stackfile": "stacks/directus-full/compose.yaml"
+      },
+      "env": [
+        {
+          "name": "DOMAIN",
+          "label": "Domain",
+          "description": "Required domain name (without http:// or https://)."
+        },
+        {
+          "name": "APP_SECRET",
+          "label": "Application secret",
+          "description": "Required unique app secret."
+        },
+        {
+          "name": "DB_PASSWORD",
+          "label": "Database password",
+          "default": "",
+          "description": "Required database password for bookstack user."
+        },
+        {
+          "name": "DB_ROOT_PASSWORD",
+          "label": "Database root password",
+          "default": "",
+          "description": "Required database password for root user."
+        },
+        {
+          "name": "TZ",
+          "label": "Timezone",
+          "default": "Europe/Rome",
+          "description": "Timezone (used for all containers)."
+        },
+        {
+          "name": "DIRECTUS_TAG",
+          "label": "Directus version",
+          "description": "The image tag to use for Directus.",
+          "default": "latest"
+        },
+        {
+          "name": "MARIADB_TAG",
+          "label": "MariaDB version",
+          "description": "The image tag to use for MariaDB.",
+          "default": "latest"
+        },
+        {
+          "name": "TRAEFIK_NETWORK",
+          "label": "Traefik network",
+          "default": "traefik",
+          "description": "Required Traefik network (must be created beforehand)."
+        },
+        {
+          "name": "TRAEFIK_ENTRYPOINT",
+          "label": "Traefik entrypoint",
+          "default": "websecure",
+          "description": "Required Traefik entrypoint (must be secure)."
+        }
+      ]
+    },
+    {
+      "id": 19,
       "type": 3,
       "title": "EspoCRM (standalone)",
       "description": "Customer relationship management (CRM) software designed to help businesses manage their sales, marketing, and customer support processes. This version exposes the app via Traefik and comes bundled with MariaDB and phpMyAdmin.",
@@ -977,106 +1252,7 @@
       ]
     },
     {
-      "type": 3,
-      "title": "Rallly (standalone)",
-      "description": "Platform designed for creating real-time polls and surveys. This version exposes the API via Traefik and comes bundled with MariaDB and phpMyAdmin.",
-      "note": "Generate the application key <code>openssl rand -base64 32</code>. Access the application at the configured domain.",
-      "categories": [
-        "Utility"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/rallly-logo.png",
-      "repository": {
-        "url": "https://github.com/gremo/portainer-templates",
-        "stackfile": "stacks/rallly-full/compose.yaml"
-      },
-      "env": [
-        {
-          "name": "DOMAIN",
-          "label": "Domain",
-          "description": "Required domain name (without http:// or https://)."
-        },
-        {
-          "name": "APP_KEY",
-          "label": "Application key",
-          "description": "Required unique app key for encryption."
-        },
-        {
-          "name": "ALLOWED_EMAILS",
-          "label": "Allowed emails",
-          "description": "Email that are allowed to register, comma separated, wildcard support."
-        },
-        {
-          "name": "DB_PASSWORD",
-          "label": "Database password",
-          "default": "",
-          "description": "Required password for rallly user."
-        },
-        {
-          "name": "MAIL_HOST",
-          "label": "SMTP server host",
-          "default": ""
-        },
-        {
-          "name": "MAIL_PORT",
-          "label": "SMTP server port",
-          "default": ""
-        },
-        {
-          "name": "MAIL_SECURE",
-          "label": "SMTP SSL",
-          "description": "Use true to enable SSL.",
-          "default": "true"
-        },
-        {
-          "name": "MAIL_USERNAME",
-          "label": "SMTP username",
-          "default": ""
-        },
-        {
-          "name": "MAIL_PASSWORD",
-          "label": "SMTP password",
-          "default": ""
-        },
-        {
-          "name": "SUPPORT_EMAIL",
-          "label": "Support email",
-          "description": "Required email for support queries.",
-          "default": ""
-        },
-        {
-          "name": "NOREPLY_EMAIL",
-          "label": "No-reply email",
-          "description": "Optional email for all transactional emails (fallback to support email).",
-          "default": ""
-        },
-        {
-          "name": "NOREPLY_EMAIL_NAME",
-          "label": "No-reply name",
-          "description": "Used as the sender name for all transactional emails.",
-          "default": ""
-        },
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome",
-          "description": "Timezone (used for all containers)."
-        },
-        {
-          "name": "TRAEFIK_NETWORK",
-          "label": "Traefik network",
-          "default": "traefik",
-          "description": "Required Traefik network (must be created beforehand)."
-        },
-        {
-          "name": "TRAEFIK_ENTRYPOINT",
-          "label": "Traefik entrypoint",
-          "default": "websecure",
-          "description": "Required Traefik entrypoint (must be secure)."
-        }
-      ]
-    },
-    {
+      "id": 20,
       "type": 3,
       "title": "Shlink (standalone)",
       "description": "URL shortener that allows users to create, manage, and track shortened links. This version exposes the API via Traefik and comes bundled with MariaDB and phpMyAdmin.",
@@ -1141,6 +1317,7 @@
       ]
     },
     {
+      "id": 21,
       "type": 3,
       "title": "GTM server",
       "description": "Server-side implementation of Google Tag Manager (GTM). This version exposes the server via Traefik.",
@@ -1165,75 +1342,6 @@
           "label": "Container config",
           "default": "",
           "description": "Required container configuration string."
-        },
-        {
-          "name": "TRAEFIK_NETWORK",
-          "label": "Traefik network",
-          "default": "traefik",
-          "description": "Required Traefik network (must be created beforehand)."
-        },
-        {
-          "name": "TRAEFIK_ENTRYPOINT",
-          "label": "Traefik entrypoint",
-          "default": "websecure",
-          "description": "Required Traefik entrypoint (must be secure)."
-        }
-      ]
-    },
-    {
-      "type": 3,
-      "title": "Directus (standalone)",
-      "description": "Headless CMS and API platform for managing and interacting with SQL databases. This version exposes the app via Traefik and comes bundled with MariaDB and phpMyAdmin.",
-      "note": "Generate the application secret <code>openssl rand -hex 16</code>. Access the application at the configured domain using the credentials <code>admin@admin.com</code> / <code>password</code>. Access phpMyAdmin at the path <code>/phpmyadmin</code> using the <code>directus</code> user or <code>root</code>, along with their respective configured passwords.",
-      "categories": [
-        "CMS"
-      ],
-      "platform": "linux",
-      "logo": "https://raw.githubusercontent.com/gremo/portainer-templates/refs/heads/main/resources/img/directus-logo.png",
-      "repository": {
-        "url": "https://github.com/gremo/portainer-templates",
-        "stackfile": "stacks/directus-full/compose.yaml"
-      },
-      "env": [
-        {
-          "name": "DOMAIN",
-          "label": "Domain",
-          "description": "Required domain name (without http:// or https://)."
-        },
-        {
-          "name": "APP_SECRET",
-          "label": "Application secret",
-          "description": "Required unique app secret."
-        },
-        {
-          "name": "DB_PASSWORD",
-          "label": "Database password",
-          "default": "",
-          "description": "Required database password for bookstack user."
-        },
-        {
-          "name": "DB_ROOT_PASSWORD",
-          "label": "Database root password",
-          "default": "",
-          "description": "Required database password for root user."
-        },
-        {
-          "name": "TZ",
-          "label": "Timezone",
-          "default": "Europe/Rome",
-          "description": "Timezone (used for all containers)."
-        },
-        {
-          "name": "DIRECTUS_TAG",
-          "label": "Directus version",
-          "description": "The image tag to use for Directus.",
-          "default": "latest"
-        },
-        {
-          "name": "MARIADB_TAG",
-          "label": "MariaDB version",
-          "description": "The image tag to use for MariaDB.",
-          "default": "latest"
         },
         {
           "name": "TRAEFIK_NETWORK",
